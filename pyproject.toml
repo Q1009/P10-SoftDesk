@@ -1,0 +1,18 @@
+[project]
+name = "p10-softdesk"
+version = "0.1.0"
+description = "Feedback and monitoring of technical issues related to our IT applications"
+authors = [
+    {name = "Quentin Tellier",email = "quentin.tellier@outlook.com"}
+]
+requires-python = ">=3.13"
+dependencies = [
+    "django (>=6.0.3,<7.0.0)",
+    "djangorestframework (>=3.17.1,<4.0.0)",
+    "djangorestframework-simplejwt (>=5.5.1,<6.0.0)"
+]
+
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
