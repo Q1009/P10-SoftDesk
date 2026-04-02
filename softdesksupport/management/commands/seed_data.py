@@ -4,6 +4,14 @@ from django.db import transaction
 from authentication.models import User
 from softdesksupport.models import Project, ProjectContributor, Issue, Comment
 
+#Passwords : DemoPass2026! (à changer en production)
+
+# Première initialisation (idempotent : ignore les données existantes)
+# poetry run python manage.py seed_data
+
+# Réinitialisation complète (supprime et recrée tout)
+# poetry run python manage.py seed_data --reset
+
 
 # --- Données de référence ---
 
@@ -238,6 +246,7 @@ class Command(BaseCommand):
                     project=project,
                     title=title,
                     description=f"Description détaillée : {title.lower()}.",
+                    type=issue_type,
                     status=random.choice(statuses),
                     priority=random.choice(priorities),
                     author=random.choice(assignable_users),

@@ -19,7 +19,6 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api-auth/', include('authentication.urls', namespace='authentication')),
-    path('', include('authentication.urls', namespace='authentication')),
+    path('api-auth/', include('rest_framework.urls')),
     path('softdesksupport/', include('softdesksupport.urls', namespace='softdesksupport')),
 ]
