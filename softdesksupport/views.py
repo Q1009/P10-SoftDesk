@@ -1,7 +1,8 @@
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404
 from rest_framework.viewsets import ModelViewSet
 from .models import Project, Issue, Comment
 from .serializers import ProjectDetailSerializer, ProjectListSerializer, IssueDetailSerializer, IssueListSerializer, CommentSerializer
+from rest_framework.permissions import IsAuthenticated
 
 class MultipleSerializerMixin:
     detail_serializer_class = None
@@ -16,6 +17,7 @@ class ProjectViewset(MultipleSerializerMixin, ModelViewSet):
 
     serializer_class = ProjectListSerializer
     detail_serializer_class = ProjectDetailSerializer
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         # return Project.objects.filter(author=self.request.user).order_by('-created_at')
@@ -27,21 +29,22 @@ class IssueViewset(MultipleSerializerMixin, ModelViewSet):
     detail_serializer_class = IssueDetailSerializer
 
     def get_queryset(self):
-        queryset = Issue.objects.all()
-        project_id = self.request.GET.get('project_id')
-        if project_id:
-            queryset = queryset.filter(project_id=project_id)
-        # return Issue.objects.filter(project__author=self.request.user).order_by('-created_at')
-        return queryset
-    
+        return Issue.objects.filter(project_id=self.kwargs['project_pk'])
+
+    def perform_create(self, serializer):
+        project = get_object_or_404(Project, pk=self.kwargs['project_pk'])
+        serializer.save(project=project, author=self.request.user)
+
 class CommentViewset(ModelViewSet):
 
     serializer_class = CommentSerializer
 
     def get_queryset(self):
-        queryset = Comment.objects.all()
-        issue_id = self.request.GET.get('issue_id')
-        if issue_id:
-            queryset = queryset.filter(issue_id=issue_id)
-        # return Comment.objects.filter(issue__project__author=self.request.user).order_by('-created_at')
-        return queryset
+        return Comment.objects.filter(
+            issue_id=self.kwargs['issue_pk'],
+            issue__project_id=self.kwargs['project_pk'],
+        )
+
+    def perform_create(self, serializer):
+        issue = get_object_or_404(Issue, pk=self.kwargs['issue_pk'], project_id=self.kwargs['project_pk'])
+        serializer.save(issue=issue, author=self.request.user)

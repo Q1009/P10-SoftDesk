@@ -7,6 +7,11 @@ class ProjectListSerializer(serializers.ModelSerializer):
         model = Project
         fields = ['id', 'name', 'description', 'project_type',
                   'author', 'created_at', 'updated_at']
+        
+    def validate_name(self, value):
+        if Project.objects.filter(name=value).exists():
+            raise serializers.ValidationError("A project with this name already exists.")
+        return value
 
 
 class ProjectDetailSerializer(serializers.ModelSerializer):
