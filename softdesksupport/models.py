@@ -1,4 +1,4 @@
-from django.db import models
+from django.db import models, transaction
 from django.conf import settings
 
 # Create your models here.
@@ -25,6 +25,14 @@ class Project(models.Model):
 
     def __str__(self):
         return self.name
+    
+    @transaction.atomic
+    def add_contributor(self, user, contribution):
+        if not self.contributors.filter(id=user.id).exists():
+            ProjectContributor.objects.create(project=self, contributor=user, contribution=contribution)
+        else:
+            raise ValueError("L'utilisateur est déjà un contributeur de ce projet.")
+        
 
 class ProjectContributor(models.Model):
     project = models.ForeignKey(Project, on_delete=models.CASCADE, verbose_name='Projet')

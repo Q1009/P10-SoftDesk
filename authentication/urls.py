@@ -4,7 +4,7 @@
 # from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 # # create nested router
 
-# app_name = 'authentication'
+app_name = 'authentication'
 
 # router = routers.SimpleRouter()
 # router.register('project', ProjectViewset, basename='project')
