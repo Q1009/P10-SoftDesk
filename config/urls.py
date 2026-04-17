@@ -24,4 +24,5 @@ urlpatterns = [
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api-auth/', include('rest_framework.urls')),
     path('api/', include('softdesksupport.urls', namespace='softdesksupport')),
+    path('api/users/', include('authentication.urls', namespace='authentication')),
 ]
