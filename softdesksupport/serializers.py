@@ -71,12 +71,24 @@ class IssueDetailSerializer(serializers.ModelSerializer):
 
     def get_comments(self, instance):
         queryset = instance.comments.all()
-        serializers = CommentSerializer(queryset, many=True)
+        serializers = CommentSerializer(queryset, many=True, context={
+            **self.context,
+            'project_id': instance.project_id,
+        })
         return serializers.data
 
 
 class CommentSerializer(serializers.ModelSerializer):
+    issue_url = serializers.SerializerMethodField()
+
     class Meta:
         model = Comment
-        fields = ['unique_id', 'content', 'issue',
+        fields = ['unique_id', 'uuid', 'content', 'issue', 'issue_url',
                   'author', 'created_at', 'updated_at']
+
+    def get_issue_url(self, instance):
+        project_id = self.context.get('project_id')
+        issue_id = instance.issue_id
+        if project_id and issue_id:
+            return f"/api/projects/{project_id}/issues/{issue_id}/"
+        return None

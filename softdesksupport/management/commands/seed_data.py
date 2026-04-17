@@ -16,11 +16,16 @@ from softdesksupport.models import Project, ProjectContributor, Issue, Comment
 # --- Données de référence ---
 
 USERS_DATA = [
-    {"username": "alice_martin",  "first_name": "Alice",  "last_name": "Martin",  "email": "alice.martin@example.com",  "age": 28, "can_be_contacted": True,  "can_data_be_shared": False},
-    {"username": "bob_dupont",    "first_name": "Bob",    "last_name": "Dupont",   "email": "bob.dupont@example.com",    "age": 35, "can_be_contacted": False, "can_data_be_shared": False},
-    {"username": "claire_bernard","first_name": "Claire", "last_name": "Bernard",  "email": "claire.bernard@example.com","age": 24, "can_be_contacted": True,  "can_data_be_shared": True},
-    {"username": "david_leroy",   "first_name": "David",  "last_name": "Leroy",    "email": "david.leroy@example.com",   "age": 42, "can_be_contacted": True,  "can_data_be_shared": False},
-    {"username": "emma_petit",    "first_name": "Emma",   "last_name": "Petit",    "email": "emma.petit@example.com",    "age": 31, "can_be_contacted": False, "can_data_be_shared": True},
+    {"username": "alice_martin",   "first_name": "Alice",   "last_name": "Martin",   "email": "alice.martin@example.com",   "date_of_birth": "1996-03-14", "can_be_contacted": True,  "can_data_be_shared": False},
+    {"username": "bob_dupont",     "first_name": "Bob",     "last_name": "Dupont",   "email": "bob.dupont@example.com",     "date_of_birth": "1989-07-22", "can_be_contacted": False, "can_data_be_shared": False},
+    {"username": "claire_bernard", "first_name": "Claire",  "last_name": "Bernard",  "email": "claire.bernard@example.com", "date_of_birth": "2000-11-05", "can_be_contacted": True,  "can_data_be_shared": True},
+    {"username": "david_leroy",    "first_name": "David",   "last_name": "Leroy",    "email": "david.leroy@example.com",    "date_of_birth": "1982-01-30", "can_be_contacted": True,  "can_data_be_shared": False},
+    {"username": "emma_petit",     "first_name": "Emma",    "last_name": "Petit",    "email": "emma.petit@example.com",     "date_of_birth": "1993-09-18", "can_be_contacted": False, "can_data_be_shared": True},
+    {"username": "francois_moreau","first_name": "François","last_name": "Moreau",   "email": "francois.moreau@example.com","date_of_birth": "1987-06-11", "can_be_contacted": True,  "can_data_be_shared": True},
+    {"username": "gaelle_simon",   "first_name": "Gaëlle",  "last_name": "Simon",    "email": "gaelle.simon@example.com",   "date_of_birth": "1995-02-28", "can_be_contacted": False, "can_data_be_shared": False},
+    {"username": "hugo_thomas",    "first_name": "Hugo",    "last_name": "Thomas",   "email": "hugo.thomas@example.com",    "date_of_birth": "1991-12-03", "can_be_contacted": True,  "can_data_be_shared": False},
+    {"username": "ines_garcia",    "first_name": "Inès",    "last_name": "Garcia",   "email": "ines.garcia@example.com",    "date_of_birth": "1998-08-17", "can_be_contacted": True,  "can_data_be_shared": True},
+    {"username": "julien_lambert", "first_name": "Julien",  "last_name": "Lambert",  "email": "julien.lambert@example.com", "date_of_birth": "1984-04-09", "can_be_contacted": False, "can_data_be_shared": True},
 ]
 
 PROJECTS_DATA = [
@@ -151,7 +156,7 @@ class Command(BaseCommand):
     # --- Création des utilisateurs ---
 
     def _create_users(self):
-        """Crée les 5 utilisateurs de démonstration s'ils n'existent pas déjà."""
+        """Crée les 10 utilisateurs de démonstration s'ils n'existent pas déjà."""
         users = []
         for data in USERS_DATA:
             user, created = User.objects.get_or_create(
@@ -160,7 +165,7 @@ class Command(BaseCommand):
                     "first_name": data["first_name"],
                     "last_name": data["last_name"],
                     "email": data["email"],
-                    "age": data["age"],
+                    "date_of_birth": data["date_of_birth"],
                     "can_be_contacted": data["can_be_contacted"],
                     "can_data_be_shared": data["can_data_be_shared"],
                     "is_staff": False,
@@ -168,7 +173,6 @@ class Command(BaseCommand):
                 },
             )
             if created:
-                # Mot de passe sécurisé par défaut (à changer en production)
                 user.set_password("DemoPass2026!")
                 user.save()
                 self.stdout.write(f"  Utilisateur créé : {user.username}")
@@ -194,6 +198,8 @@ class Command(BaseCommand):
                 },
             )
             if created:
+                # L'auteur devient automatiquement contributeur
+                project.add_contributor(author, 'Auteur')
                 self._add_contributors(project, author, users)
                 self.stdout.write(f"  Projet créé : {project.name} (auteur : {author.username})")
             else:
@@ -230,18 +236,18 @@ class Command(BaseCommand):
                 continue
 
             nb_issues = random.randint(3, 10)
-            # Pool des contributeurs du projet (auteur inclus) pour assigner des issues
+            # Pool des contributeurs du projet uniquement (auteur inclus via add_contributor)
             contributor_ids = list(
                 ProjectContributor.objects.filter(project=project)
                 .values_list("contributor_id", flat=True)
             )
-            assignable_users = list(User.objects.filter(id__in=contributor_ids + [project.author_id]))
+            assignable_users = list(User.objects.filter(id__in=contributor_ids))
 
             for _ in range(nb_issues):
                 issue_type = random.choice(issue_types)
                 title = random.choice(ISSUE_TITLES[issue_type])
-                # L'assignee peut être None (non assigné)
-                assignee = random.choice(assignable_users + [None])
+                # L'assignee est obligatoirement un contributeur du projet
+                assignee = random.choice(assignable_users)
                 issue = Issue.objects.create(
                     project=project,
                     title=title,

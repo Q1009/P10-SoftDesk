@@ -1,5 +1,6 @@
 from django.db import models, transaction
 from django.conf import settings
+import uuid
 
 # Create your models here.
 class Project(models.Model):
@@ -100,6 +101,7 @@ class Issue(models.Model):
     
 class Comment(models.Model):
     unique_id = models.AutoField(primary_key=True, verbose_name='ID unique du commentaire')
+    uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, verbose_name='UUID du commentaire')
     issue = models.ForeignKey(Issue, on_delete=models.CASCADE, related_name='comments', verbose_name='Issue')
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='comments', verbose_name='Auteur du commentaire')
     content = models.TextField(max_length=1000, verbose_name='Description')

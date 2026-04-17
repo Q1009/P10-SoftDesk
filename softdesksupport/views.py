@@ -100,6 +100,11 @@ class CommentViewset(ModelViewSet):
             issue__project__contributors=self.request.user,
         )
 
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['project_id'] = self.kwargs.get('project_pk')
+        return context
+
     def perform_create(self, serializer):
         issue = get_object_or_404(Issue, pk=self.kwargs['issue_pk'], project_id=self.kwargs['project_pk'])
         serializer.save(issue=issue, author=self.request.user)
