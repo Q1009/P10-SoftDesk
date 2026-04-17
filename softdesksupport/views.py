@@ -6,6 +6,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from .permissions import IsContributor
+from django.contrib.auth import get_user_model
 
 class MultipleSerializerMixin:
     detail_serializer_class = None
@@ -25,22 +26,47 @@ class ProjectViewset(MultipleSerializerMixin, ModelViewSet):
     def get_queryset(self):
         # L'action retrieve est protégée par IsContributor, donc on peut retourner tous les projets ici
         return Project.objects.all()
-    
+
+    def perform_create(self, serializer):
+        project = serializer.save(author=self.request.user)
+        project.add_contributor(self.request.user, 'Auteur')
+
     @action(detail=True, methods=['post'], url_path='add-contributor')
     def add_contributor(self, request, pk=None):
         project = self.get_object()
+        if request.user != project.author:
+            return Response({'error': "Seul l'auteur du projet peut ajouter des contributeurs."}, status=403)
         user_id = request.data.get('user_id')
         contribution = request.data.get('contribution')
 
         if not user_id or not contribution:
             return Response({'error': 'user_id and contribution are required.'}, status=400)
 
+        User = get_user_model()
+        user = get_object_or_404(User, pk=user_id)
+
         try:
-            project.add_contributor(user_id, contribution)
+            project.add_contributor(user, contribution)
             return Response({'status': 'contributor added'}, status=200)
         except ValueError as e:
             return Response({'error': str(e)}, status=400)
-    
+
+    @action(detail=True, methods=['post'], url_path='remove-contributor')
+    def remove_contributor(self, request, pk=None):
+        project = self.get_object()
+        if request.user != project.author:
+            return Response({'error': "Seul l'auteur du projet peut retirer des contributeurs."}, status=403)
+        user_id = request.data.get('user_id')
+        if not user_id:
+            return Response({'error': 'user_id is required.'}, status=400)
+        User = get_user_model()
+        user = get_object_or_404(User, pk=user_id)
+        try:
+            project.remove_contributor(user)
+            return Response({'status': 'contributor removed'}, status=200)
+        except ValueError as e:
+            return Response({'error': str(e)}, status=400)
+
 class IssueViewset(MultipleSerializerMixin, ModelViewSet):
 
     serializer_class = IssueListSerializer
@@ -52,6 +78,11 @@ class IssueViewset(MultipleSerializerMixin, ModelViewSet):
             project_id=self.kwargs['project_pk'],
             project__contributors=self.request.user,
         )
+
+    def get_serializer_context(self):
+        context = super().get_serializer_context()
+        context['project_id'] = self.kwargs.get('project_pk')
+        return context
 
     def perform_create(self, serializer):
         project = get_object_or_404(Project, pk=self.kwargs['project_pk'])

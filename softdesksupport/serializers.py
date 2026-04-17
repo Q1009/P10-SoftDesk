@@ -40,10 +40,26 @@ class ContributorListSerializer(serializers.ModelSerializer):
         fields = ['username', 'email', 'can_be_contacted']
 
 class IssueListSerializer(serializers.ModelSerializer):
+    assignee = serializers.PrimaryKeyRelatedField(
+        queryset=get_user_model().objects.none(),
+        allow_null=True,
+        required=True,
+    )
+
     class Meta:
         model = Issue
         fields = ['id', 'title', 'description', 'project',
                   'author', 'assignee', 'created_at', 'updated_at']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        project_id = self.context.get('project_id')
+        if project_id:
+            try:
+                project = Project.objects.get(pk=project_id)
+                self.fields['assignee'].queryset = project.contributors.all()
+            except Project.DoesNotExist:
+                pass
 
 class IssueDetailSerializer(serializers.ModelSerializer):
     comments = serializers.SerializerMethodField()
@@ -51,7 +67,7 @@ class IssueDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Issue
         fields = ['id', 'title', 'description', 'project',
-                  'author', 'assignee', 'created_at', 'updated_at', 'comments']
+                  'author', 'assignee', 'type', 'priority', 'status', 'created_at', 'updated_at', 'comments']
 
     def get_comments(self, instance):
         queryset = instance.comments.all()

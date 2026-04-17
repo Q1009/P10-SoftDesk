@@ -32,6 +32,14 @@ class Project(models.Model):
             ProjectContributor.objects.create(project=self, contributor=user, contribution=contribution)
         else:
             raise ValueError("L'utilisateur est déjà un contributeur de ce projet.")
+
+    @transaction.atomic
+    def remove_contributor(self, user):
+        if user == self.author:
+            raise ValueError("Impossible de retirer l'auteur du projet.")
+        deleted, _ = ProjectContributor.objects.filter(project=self, contributor=user).delete()
+        if not deleted:
+            raise ValueError("Cet utilisateur n'est pas contributeur de ce projet.")
         
 
 class ProjectContributor(models.Model):
