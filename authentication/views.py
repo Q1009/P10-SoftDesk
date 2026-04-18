@@ -25,4 +25,7 @@ class UserProfileView(generics.RetrieveUpdateDestroyAPIView):
     def destroy(self, request, *args, **kwargs):
         user = self.get_object()
         user.delete()
-        return Response({'detail': 'Votre compte et toutes vos données ont été supprimés.'}, status=status.HTTP_204_NO_CONTENT)
+        return Response(
+            {'detail': 'Votre compte et toutes vos données ont été supprimés.'},
+            status=status.HTTP_204_NO_CONTENT,
+        )

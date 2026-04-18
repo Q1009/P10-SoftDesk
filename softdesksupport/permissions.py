@@ -1,5 +1,7 @@
 from rest_framework.permissions import BasePermission
+
 from .models import Project, Issue, Comment
+
 
 class IsContributor(BasePermission):
 
@@ -42,16 +44,16 @@ class IsContributor(BasePermission):
         if isinstance(obj, Project):
             if view.action in WRITE_ACTIONS:
                 return request.user == obj.author
-            return request.user in obj.contributors.all()
+            return obj.contributors.filter(id=request.user.id).exists()
 
         if isinstance(obj, Issue):
             if view.action in WRITE_ACTIONS:
                 return request.user == obj.author
-            return request.user in obj.project.contributors.all()
+            return obj.project.contributors.filter(id=request.user.id).exists()
 
         if isinstance(obj, Comment):
             if view.action in WRITE_ACTIONS:
                 return request.user == obj.author
-            return request.user in obj.issue.project.contributors.all()
+            return obj.issue.project.contributors.filter(id=request.user.id).exists()
 
         return False

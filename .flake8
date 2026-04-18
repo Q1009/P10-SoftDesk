@@ -1,0 +1,15 @@
+[flake8]
+max-line-length = 119
+exclude =
+    migrations,
+    __pycache__,
+    .git,
+    .venv,
+    venv,
+    manage.py,
+    config/settings.py,
+    config/asgi.py,
+    config/wsgi.py,
+    softdesksupport/management/commands/seed_data.py
+format = html
+htmldir = flake8-report

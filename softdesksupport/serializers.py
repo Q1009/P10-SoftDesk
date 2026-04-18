@@ -1,6 +1,7 @@
-from rest_framework import serializers
-from .models import Project, Issue, Comment
 from django.contrib.auth import get_user_model
+from rest_framework import serializers
+
+from .models import Project, Issue, Comment
 
 
 class ProjectListSerializer(serializers.ModelSerializer):
@@ -9,7 +10,7 @@ class ProjectListSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'description', 'project_type',
                   'author', 'contributors', 'created_at', 'updated_at']
         read_only_fields = ['author', 'contributors']
-        
+
     def validate_name(self, value):
         if Project.objects.filter(name=value).exists():
             raise serializers.ValidationError("Ce projet existe déjà.")
@@ -30,18 +31,37 @@ class ProjectDetailSerializer(serializers.ModelSerializer):
         queryset = instance.issues.all()
         serializers = IssueListSerializer(queryset, many=True)
         return serializers.data
-    
+
     def get_contributors(self, instance):
         queryset = instance.contributors.all()
         serializers = ContributorListSerializer(queryset, many=True)
         return serializers.data
-    
+
+
 class ContributorListSerializer(serializers.ModelSerializer):
     class Meta:
         model = get_user_model()
         fields = ['username', 'email', 'can_be_contacted']
 
-class IssueListSerializer(serializers.ModelSerializer):
+
+class AssigneeFromProjectMixin:
+    """Sets the assignee queryset to the project's contributors."""
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        project = self.context.get('project')
+        if project is None:
+            project_id = self.context.get('project_id')
+            if project_id:
+                try:
+                    project = Project.objects.prefetch_related('contributors').get(pk=project_id)
+                except Project.DoesNotExist:
+                    project = None
+        if project:
+            self.fields['assignee'].queryset = project.contributors.all()
+
+
+class IssueListSerializer(AssigneeFromProjectMixin, serializers.ModelSerializer):
     assignee = serializers.PrimaryKeyRelatedField(
         queryset=get_user_model().objects.none(),
         allow_null=True,
@@ -55,23 +75,14 @@ class IssueListSerializer(serializers.ModelSerializer):
                   'author', 'assignee', 'created_at', 'updated_at']
         read_only_fields = ['author', 'project']
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        project_id = self.context.get('project_id')
-        if project_id:
-            try:
-                project = Project.objects.get(pk=project_id)
-                self.fields['assignee'].queryset = project.contributors.all()
-            except Project.DoesNotExist:
-                pass
-
     def validate_title(self, value):
         project_id = self.context.get('project_id')
         if project_id and Issue.objects.filter(title=value, project_id=project_id).exists():
             raise serializers.ValidationError("Cette tâche existe déjà dans ce projet.")
         return value
 
-class IssueDetailSerializer(serializers.ModelSerializer):
+
+class IssueDetailSerializer(AssigneeFromProjectMixin, serializers.ModelSerializer):
     comments = serializers.SerializerMethodField()
     assignee = serializers.PrimaryKeyRelatedField(
         queryset=get_user_model().objects.none(),
@@ -85,16 +96,6 @@ class IssueDetailSerializer(serializers.ModelSerializer):
         fields = ['id', 'title', 'description', 'project',
                   'author', 'assignee', 'type', 'priority', 'status', 'created_at', 'updated_at', 'comments']
         read_only_fields = ['author', 'project']
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        project_id = self.context.get('project_id')
-        if project_id:
-            try:
-                project = Project.objects.get(pk=project_id)
-                self.fields['assignee'].queryset = project.contributors.all()
-            except Project.DoesNotExist:
-                pass
 
     def get_comments(self, instance):
         queryset = instance.comments.all()
