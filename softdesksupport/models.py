@@ -100,7 +100,6 @@ class Issue(models.Model):
         return self.title
     
 class Comment(models.Model):
-    unique_id = models.AutoField(primary_key=True, verbose_name='ID unique du commentaire')
     uuid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True, verbose_name='UUID du commentaire')
     issue = models.ForeignKey(Issue, on_delete=models.CASCADE, related_name='comments', verbose_name='Issue')
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='comments', verbose_name='Auteur du commentaire')

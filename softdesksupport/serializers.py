@@ -8,10 +8,11 @@ class ProjectListSerializer(serializers.ModelSerializer):
         model = Project
         fields = ['id', 'name', 'description', 'project_type',
                   'author', 'contributors', 'created_at', 'updated_at']
+        read_only_fields = ['author', 'contributors']
         
     def validate_name(self, value):
         if Project.objects.filter(name=value).exists():
-            raise serializers.ValidationError("A project with this name already exists.")
+            raise serializers.ValidationError("Ce projet existe déjà.")
         return value
 
 
@@ -23,6 +24,7 @@ class ProjectDetailSerializer(serializers.ModelSerializer):
         model = Project
         fields = ['id', 'name', 'description', 'project_type',
                   'author', 'contributors', 'created_at', 'updated_at', 'issues']
+        read_only_fields = ['author', 'contributors']
 
     def get_issues(self, instance):
         queryset = instance.issues.all()
@@ -44,12 +46,14 @@ class IssueListSerializer(serializers.ModelSerializer):
         queryset=get_user_model().objects.none(),
         allow_null=True,
         required=True,
+        error_messages={'does_not_exist': 'Cet utilisateur n\'est pas un contributeur du projet.'},
     )
 
     class Meta:
         model = Issue
         fields = ['id', 'title', 'description', 'project',
                   'author', 'assignee', 'created_at', 'updated_at']
+        read_only_fields = ['author', 'project']
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -61,13 +65,36 @@ class IssueListSerializer(serializers.ModelSerializer):
             except Project.DoesNotExist:
                 pass
 
+    def validate_title(self, value):
+        project_id = self.context.get('project_id')
+        if project_id and Issue.objects.filter(title=value, project_id=project_id).exists():
+            raise serializers.ValidationError("Cette tâche existe déjà dans ce projet.")
+        return value
+
 class IssueDetailSerializer(serializers.ModelSerializer):
     comments = serializers.SerializerMethodField()
+    assignee = serializers.PrimaryKeyRelatedField(
+        queryset=get_user_model().objects.none(),
+        allow_null=True,
+        required=False,
+        error_messages={'does_not_exist': 'Cet utilisateur n\'est pas un contributeur du projet.'},
+    )
 
     class Meta:
         model = Issue
         fields = ['id', 'title', 'description', 'project',
                   'author', 'assignee', 'type', 'priority', 'status', 'created_at', 'updated_at', 'comments']
+        read_only_fields = ['author', 'project']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        project_id = self.context.get('project_id')
+        if project_id:
+            try:
+                project = Project.objects.get(pk=project_id)
+                self.fields['assignee'].queryset = project.contributors.all()
+            except Project.DoesNotExist:
+                pass
 
     def get_comments(self, instance):
         queryset = instance.comments.all()
@@ -83,8 +110,9 @@ class CommentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Comment
-        fields = ['unique_id', 'uuid', 'content', 'issue', 'issue_url',
+        fields = ['id', 'uuid', 'content', 'issue', 'issue_url',
                   'author', 'created_at', 'updated_at']
+        read_only_fields = ['issue', 'issue_url', 'author']
 
     def get_issue_url(self, instance):
         project_id = self.context.get('project_id')

@@ -12,7 +12,7 @@ class MultipleSerializerMixin:
     detail_serializer_class = None
 
     def get_serializer_class(self):
-        if self.action == 'retrieve' and self.detail_serializer_class is not None:
+        if self.action in ('retrieve', 'update', 'partial_update') and self.detail_serializer_class is not None:
             return self.detail_serializer_class
         return super().get_serializer_class()
 
@@ -34,8 +34,6 @@ class ProjectViewset(MultipleSerializerMixin, ModelViewSet):
     @action(detail=True, methods=['post'], url_path='add-contributor')
     def add_contributor(self, request, pk=None):
         project = self.get_object()
-        if request.user != project.author:
-            return Response({'error': "Seul l'auteur du projet peut ajouter des contributeurs."}, status=403)
         user_id = request.data.get('user_id')
         contribution = request.data.get('contribution')
 
@@ -47,15 +45,13 @@ class ProjectViewset(MultipleSerializerMixin, ModelViewSet):
 
         try:
             project.add_contributor(user, contribution)
-            return Response({'status': 'contributor added'}, status=200)
+            return Response({f'status': f'{user.first_name} {user.last_name} contribue au projet !'}, status=200)
         except ValueError as e:
             return Response({'error': str(e)}, status=400)
 
     @action(detail=True, methods=['post'], url_path='remove-contributor')
     def remove_contributor(self, request, pk=None):
         project = self.get_object()
-        if request.user != project.author:
-            return Response({'error': "Seul l'auteur du projet peut retirer des contributeurs."}, status=403)
         user_id = request.data.get('user_id')
         if not user_id:
             return Response({'error': 'user_id is required.'}, status=400)
@@ -63,7 +59,7 @@ class ProjectViewset(MultipleSerializerMixin, ModelViewSet):
         user = get_object_or_404(User, pk=user_id)
         try:
             project.remove_contributor(user)
-            return Response({'status': 'contributor removed'}, status=200)
+            return Response({f'status': f'{user.first_name} {user.last_name} ne contribue plus au projet.'}, status=200)
         except ValueError as e:
             return Response({'error': str(e)}, status=400)
 
