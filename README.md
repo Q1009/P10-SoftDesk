@@ -4,12 +4,12 @@
 [![Django](https://img.shields.io/badge/Django-6.0-green)](https://www.djangoproject.com/)
 [![DRF](https://img.shields.io/badge/DRF-3.17-red)](https://www.django-rest-framework.org/)
 
-API REST de suivi et de remontée de problèmes techniques sur des applications informatiques.
-Développée avec Django REST Framework, elle permet la gestion de projets, d'issues et de commentaires avec un système de permissions basé sur les contributeurs.
+A REST API for tracking and reporting technical issues on IT applications.
+Built with Django REST Framework, it provides project, issue, and comment management with a contributor-based permission system.
 
 ---
 
-## Prérequis
+## Requirements
 
 - Python 3.13+
 - [Poetry](https://python-poetry.org/docs/#installation)
@@ -18,57 +18,57 @@ Développée avec Django REST Framework, elle permet la gestion de projets, d'is
 
 ## Installation
 
-### 1. Cloner le dépôt
+### 1. Clone the repository
 
 ```bash
 git clone https://github.com/quentintellier/p10-softdesk.git
 cd p10-softdesk
 ```
 
-### 2. Installer les dépendances
+### 2. Install dependencies
 
 ```bash
 poetry install
 ```
 
-### 3. Appliquer les migrations
+### 3. Apply migrations
 
 ```bash
 poetry run python manage.py migrate
 ```
 
-### 4. (Optionnel) Charger des données de démonstration
+### 4. (Optional) Load demo data
 
 ```bash
-# Initialisation (idempotent)
+# First-time setup (idempotent)
 poetry run python manage.py seed_data
 
-# Réinitialisation complète
+# Full reset
 poetry run python manage.py seed_data --reset
 ```
 
-> Mot de passe des comptes de démo : `DemoPass2026!`
+> Demo accounts password: `DemoPass2026!`
 
-### 5. Lancer le serveur
+### 5. Start the server
 
 ```bash
 poetry run python manage.py runserver
 ```
 
-L'API est accessible sur `http://127.0.0.1:8000/`.
+The API is available at `http://127.0.0.1:8000/`.
 
 ---
 
-## Authentification
+## Authentication
 
-L'API utilise des **JWT (JSON Web Tokens)** via `djangorestframework-simplejwt`.
+The API uses **JWT (JSON Web Tokens)** via `djangorestframework-simplejwt`.
 
-| Méthode | Endpoint | Description |
+| Method | Endpoint | Description |
 |---|---|---|
-| POST | `/api/token/` | Obtenir un access token et un refresh token |
-| POST | `/api/token/refresh/` | Renouveler l'access token |
+| POST | `/api/token/` | Obtain an access token and a refresh token |
+| POST | `/api/token/refresh/` | Refresh the access token |
 
-**Exemple de requête :**
+**Example request:**
 
 ```json
 POST /api/token/
@@ -78,7 +78,7 @@ POST /api/token/
 }
 ```
 
-Inclure le token dans toutes les requêtes suivantes :
+Include the token in all subsequent requests:
 
 ```
 Authorization: Bearer <access_token>
@@ -88,63 +88,63 @@ Authorization: Bearer <access_token>
 
 ## Endpoints
 
-### Utilisateurs
+### Users
 
-| Méthode | Endpoint | Description | Auth |
+| Method | Endpoint | Description | Auth required |
 |---|---|---|---|
-| POST | `/api/users/register/` | Créer un compte | Non |
-| GET | `/api/users/me/` | Consulter son profil | Oui |
-| PATCH | `/api/users/me/` | Modifier son profil | Oui |
-| DELETE | `/api/users/me/` | Supprimer son compte (droit à l'oubli) | Oui |
+| POST | `/api/users/register/` | Create an account | No |
+| GET | `/api/users/me/` | View own profile | Yes |
+| PATCH | `/api/users/me/` | Update own profile | Yes |
+| DELETE | `/api/users/me/` | Delete own account (right to erasure) | Yes |
 
-**Champs requis à l'inscription :**
+**Required fields for registration:**
 
 ```json
 {
     "username": "john_doe",
     "email": "john@example.com",
-    "password": "motdepasse123",
+    "password": "password123",
     "date_of_birth": "1995-06-15",
     "can_be_contacted": true,
     "can_data_be_shared": false
 }
 ```
 
-> L'âge minimum requis est de **15 ans** (conformité RGPD).
+> Minimum age is **15 years** (GDPR compliance).
 
 ---
 
-### Projets
+### Projects
 
-| Méthode | Endpoint | Description | Restriction |
+| Method | Endpoint | Description | Restriction |
 |---|---|---|---|
-| GET | `/api/projects/` | Lister les projets | Authentifié |
-| POST | `/api/projects/` | Créer un projet | Authentifié |
-| GET | `/api/projects/{id}/` | Détail d'un projet | Contributeur |
-| PATCH | `/api/projects/{id}/` | Modifier un projet | Auteur |
-| DELETE | `/api/projects/{id}/` | Supprimer un projet | Auteur |
-| POST | `/api/projects/{id}/add-contributor/` | Ajouter un contributeur | Auteur |
-| POST | `/api/projects/{id}/remove-contributor/` | Retirer un contributeur | Auteur |
+| GET | `/api/projects/` | List projects | Authenticated |
+| POST | `/api/projects/` | Create a project | Authenticated |
+| GET | `/api/projects/{id}/` | Project detail | Contributor |
+| PATCH | `/api/projects/{id}/` | Update a project | Author |
+| DELETE | `/api/projects/{id}/` | Delete a project | Author |
+| POST | `/api/projects/{id}/add-contributor/` | Add a contributor | Author |
+| POST | `/api/projects/{id}/remove-contributor/` | Remove a contributor | Author |
 
-**Champs requis à la création :**
+**Required fields for creation:**
 
 ```json
 {
-    "name": "Mon projet",
-    "description": "Description du projet",
+    "name": "My project",
+    "description": "Project description",
     "project_type": "BE"
 }
 ```
 
-> Types de projet : `BE` (Back-end), `FE` (Front-end), `IOS`, `AND` (Android)
+> Project types: `BE` (Back-end), `FE` (Front-end), `IOS`, `AND` (Android)
 
-**Ajouter un contributeur :**
+**Add a contributor:**
 
 ```json
 POST /api/projects/{id}/add-contributor/
 {
     "user_id": 3,
-    "contribution": "Développeur"
+    "contribution": "Developer"
 }
 ```
 
@@ -152,29 +152,29 @@ POST /api/projects/{id}/add-contributor/
 
 ### Issues
 
-| Méthode | Endpoint | Description | Restriction |
+| Method | Endpoint | Description | Restriction |
 |---|---|---|---|
-| GET | `/api/projects/{project_pk}/issues/` | Lister les issues | Contributeur |
-| POST | `/api/projects/{project_pk}/issues/` | Créer une issue | Contributeur |
-| GET | `/api/projects/{project_pk}/issues/{id}/` | Détail d'une issue | Contributeur |
-| PATCH | `/api/projects/{project_pk}/issues/{id}/` | Modifier une issue | Auteur |
-| DELETE | `/api/projects/{project_pk}/issues/{id}/` | Supprimer une issue | Auteur |
+| GET | `/api/projects/{project_pk}/issues/` | List issues | Contributor |
+| POST | `/api/projects/{project_pk}/issues/` | Create an issue | Contributor |
+| GET | `/api/projects/{project_pk}/issues/{id}/` | Issue detail | Contributor |
+| PATCH | `/api/projects/{project_pk}/issues/{id}/` | Update an issue | Author |
+| DELETE | `/api/projects/{project_pk}/issues/{id}/` | Delete an issue | Author |
 
-**Champs requis à la création :**
+**Required fields for creation:**
 
 ```json
 {
-    "title": "Titre de l'issue",
+    "title": "Issue title",
     "description": "Description",
     "assignee": 2
 }
 ```
 
-> `assignee` doit être l'`id` d'un contributeur du projet. Les champs `project` et `author` sont automatiquement renseignés.
+> `assignee` must be the `id` of a project contributor. The `project` and `author` fields are set automatically.
 
-**Champs disponibles en modification (PATCH) :**
+**Available fields for update (PATCH):**
 
-| Champ | Valeurs possibles |
+| Field | Allowed values |
 |---|---|
 | `type` | `BUG`, `FEATURE`, `TASK` |
 | `priority` | `LOW`, `MEDIUM`, `HIGH` |
@@ -182,44 +182,44 @@ POST /api/projects/{id}/add-contributor/
 
 ---
 
-### Commentaires
+### Comments
 
-| Méthode | Endpoint | Description | Restriction |
+| Method | Endpoint | Description | Restriction |
 |---|---|---|---|
-| GET | `/api/projects/{project_pk}/issues/{issue_pk}/comments/` | Lister les commentaires | Contributeur |
-| POST | `/api/projects/{project_pk}/issues/{issue_pk}/comments/` | Créer un commentaire | Contributeur |
-| GET | `/api/projects/{project_pk}/issues/{issue_pk}/comments/{id}/` | Détail d'un commentaire | Contributeur |
-| PATCH | `/api/projects/{project_pk}/issues/{issue_pk}/comments/{id}/` | Modifier un commentaire | Auteur |
-| DELETE | `/api/projects/{project_pk}/issues/{issue_pk}/comments/{id}/` | Supprimer un commentaire | Auteur |
+| GET | `/api/projects/{project_pk}/issues/{issue_pk}/comments/` | List comments | Contributor |
+| POST | `/api/projects/{project_pk}/issues/{issue_pk}/comments/` | Create a comment | Contributor |
+| GET | `/api/projects/{project_pk}/issues/{issue_pk}/comments/{id}/` | Comment detail | Contributor |
+| PATCH | `/api/projects/{project_pk}/issues/{issue_pk}/comments/{id}/` | Update a comment | Author |
+| DELETE | `/api/projects/{project_pk}/issues/{issue_pk}/comments/{id}/` | Delete a comment | Author |
 
-**Champs requis à la création :**
+**Required fields for creation:**
 
 ```json
 {
-    "content": "Contenu du commentaire"
+    "content": "Comment content"
 }
 ```
 
-> Les champs `issue` et `author` sont automatiquement renseignés.
+> The `issue` and `author` fields are set automatically.
 
 ---
 
 ## Permissions
 
-| Rôle | Droits |
+| Role | Rights |
 |---|---|
-| Non authentifié | Inscription uniquement |
-| Authentifié | Créer un projet, consulter ses projets |
-| Contributeur | Lire les ressources du projet, créer des issues et commentaires |
-| Auteur | Modifier et supprimer ses propres ressources, gérer les contributeurs |
+| Unauthenticated | Registration only |
+| Authenticated | Create a project, view own projects |
+| Contributor | Read project resources, create issues and comments |
+| Author | Edit and delete own resources, manage contributors |
 
 ---
 
 ## Pagination
 
-Les listes sont paginées par défaut avec **5 éléments par page**.
+Lists are paginated with **5 items per page** by default.
 
-Paramètres disponibles : `limit` et `offset`.
+Available parameters: `limit` and `offset`.
 
 ```
 GET /api/projects/?limit=10&offset=0
@@ -227,12 +227,13 @@ GET /api/projects/?limit=10&offset=0
 
 ---
 
-## Qualité du code
+## Code Quality
 
-Analyse PEP8 avec flake8 :
+PEP8 analysis with flake8:
 
 ```bash
 poetry run flake8 --format=html --htmldir=flake8-report
 ```
 
-Le rapport HTML est généré dans `flake8-report/index.html`.
+The HTML report is generated in `flake8-report/index.html`.
+
