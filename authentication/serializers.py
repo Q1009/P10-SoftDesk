@@ -12,11 +12,22 @@ class RegisterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['username', 'email', 'password', 'date_of_birth', 'can_be_contacted', 'can_data_be_shared']
+        fields = [
+            "username",
+            "email",
+            "password",
+            "date_of_birth",
+            "can_be_contacted",
+            "can_data_be_shared",
+        ]
 
     def validate_date_of_birth(self, value):
         today = date.today()
-        age = today.year - value.year - ((today.month, today.day) < (value.month, value.day))
+        age = (
+            today.year
+            - value.year
+            - ((today.month, today.day) < (value.month, value.day))
+        )
         if age < MIN_AGE:
             raise serializers.ValidationError(
                 f"Vous devez avoir au moins {MIN_AGE} ans pour vous inscrire (RGPD)."
@@ -24,7 +35,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         return value
 
     def create(self, validated_data):
-        password = validated_data.pop('password')
+        password = validated_data.pop("password")
         user = User(**validated_data)
         user.set_password(password)
         user.save()
@@ -34,5 +45,12 @@ class RegisterSerializer(serializers.ModelSerializer):
 class UserProfileSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['id', 'username', 'email', 'date_of_birth', 'can_be_contacted', 'can_data_be_shared']
-        read_only_fields = ['id']
+        fields = [
+            "id",
+            "username",
+            "email",
+            "date_of_birth",
+            "can_be_contacted",
+            "can_data_be_shared",
+        ]
+        read_only_fields = ["id"]

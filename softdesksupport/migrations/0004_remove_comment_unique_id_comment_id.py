@@ -6,17 +6,19 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('softdesksupport', '0003_add_comment_uuid'),
+        ("softdesksupport", "0003_add_comment_uuid"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='comment',
-            name='unique_id',
+            model_name="comment",
+            name="unique_id",
         ),
         migrations.AddField(
-            model_name='comment',
-            name='id',
-            field=models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID'),
+            model_name="comment",
+            name="id",
+            field=models.BigAutoField(
+                auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+            ),
         ),
     ]

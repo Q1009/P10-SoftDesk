@@ -15,62 +15,245 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.CreateModel(
-            name='Issue',
+            name="Issue",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('title', models.CharField(max_length=255, verbose_name="Titre de l'issue")),
-                ('description', models.TextField(max_length=1000, verbose_name="Description de l'issue")),
-                ('status', models.CharField(choices=[('TO_DO', 'À faire'), ('IN_PROGRESS', 'En cours'), ('FINISHED', 'Terminé')], default='TO_DO', max_length=20, verbose_name="Statut de l'issue")),
-                ('priority', models.CharField(choices=[('LOW', 'Faible'), ('MEDIUM', 'Moyenne'), ('HIGH', 'Élevée')], default='MEDIUM', max_length=10, verbose_name="Priorité de l'issue")),
-                ('created_at', models.DateTimeField(auto_now_add=True, verbose_name='Date de création')),
-                ('updated_at', models.DateTimeField(auto_now=True, verbose_name='Date de mise à jour')),
-                ('assignee', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='assigned_issues', to=settings.AUTH_USER_MODEL, verbose_name='Assigné à')),
-                ('author', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='created_issues', to=settings.AUTH_USER_MODEL, verbose_name="Auteur de l'issue")),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "title",
+                    models.CharField(max_length=255, verbose_name="Titre de l'issue"),
+                ),
+                (
+                    "description",
+                    models.TextField(
+                        max_length=1000, verbose_name="Description de l'issue"
+                    ),
+                ),
+                (
+                    "status",
+                    models.CharField(
+                        choices=[
+                            ("TO_DO", "À faire"),
+                            ("IN_PROGRESS", "En cours"),
+                            ("FINISHED", "Terminé"),
+                        ],
+                        default="TO_DO",
+                        max_length=20,
+                        verbose_name="Statut de l'issue",
+                    ),
+                ),
+                (
+                    "priority",
+                    models.CharField(
+                        choices=[
+                            ("LOW", "Faible"),
+                            ("MEDIUM", "Moyenne"),
+                            ("HIGH", "Élevée"),
+                        ],
+                        default="MEDIUM",
+                        max_length=10,
+                        verbose_name="Priorité de l'issue",
+                    ),
+                ),
+                (
+                    "created_at",
+                    models.DateTimeField(
+                        auto_now_add=True, verbose_name="Date de création"
+                    ),
+                ),
+                (
+                    "updated_at",
+                    models.DateTimeField(
+                        auto_now=True, verbose_name="Date de mise à jour"
+                    ),
+                ),
+                (
+                    "assignee",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="assigned_issues",
+                        to=settings.AUTH_USER_MODEL,
+                        verbose_name="Assigné à",
+                    ),
+                ),
+                (
+                    "author",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="created_issues",
+                        to=settings.AUTH_USER_MODEL,
+                        verbose_name="Auteur de l'issue",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='Comment',
+            name="Comment",
             fields=[
-                ('unique_id', models.AutoField(primary_key=True, serialize=False, verbose_name='ID unique du commentaire')),
-                ('content', models.TextField(max_length=1000, verbose_name='Description')),
-                ('created_at', models.DateTimeField(auto_now_add=True, verbose_name='Date de création')),
-                ('updated_at', models.DateTimeField(auto_now=True, verbose_name='Date de mise à jour')),
-                ('author', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='comments', to=settings.AUTH_USER_MODEL, verbose_name='Auteur du commentaire')),
-                ('issue', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='comments', to='softdesksupport.issue', verbose_name='Issue')),
+                (
+                    "unique_id",
+                    models.AutoField(
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID unique du commentaire",
+                    ),
+                ),
+                (
+                    "content",
+                    models.TextField(max_length=1000, verbose_name="Description"),
+                ),
+                (
+                    "created_at",
+                    models.DateTimeField(
+                        auto_now_add=True, verbose_name="Date de création"
+                    ),
+                ),
+                (
+                    "updated_at",
+                    models.DateTimeField(
+                        auto_now=True, verbose_name="Date de mise à jour"
+                    ),
+                ),
+                (
+                    "author",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="comments",
+                        to=settings.AUTH_USER_MODEL,
+                        verbose_name="Auteur du commentaire",
+                    ),
+                ),
+                (
+                    "issue",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="comments",
+                        to="softdesksupport.issue",
+                        verbose_name="Issue",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='Project',
+            name="Project",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=255, verbose_name='Nom du projet')),
-                ('project_type', models.CharField(choices=[('BE', 'Back-end'), ('FE', 'Front-end'), ('IOS', 'iOS'), ('AND', 'Android')], max_length=3, verbose_name='Type de projet')),
-                ('description', models.TextField(max_length=1000, verbose_name='Description')),
-                ('created_at', models.DateTimeField(auto_now_add=True, verbose_name='Date de création')),
-                ('updated_at', models.DateTimeField(auto_now=True, verbose_name='Date de mise à jour')),
-                ('author', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL, verbose_name='Auteur')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "name",
+                    models.CharField(max_length=255, verbose_name="Nom du projet"),
+                ),
+                (
+                    "project_type",
+                    models.CharField(
+                        choices=[
+                            ("BE", "Back-end"),
+                            ("FE", "Front-end"),
+                            ("IOS", "iOS"),
+                            ("AND", "Android"),
+                        ],
+                        max_length=3,
+                        verbose_name="Type de projet",
+                    ),
+                ),
+                (
+                    "description",
+                    models.TextField(max_length=1000, verbose_name="Description"),
+                ),
+                (
+                    "created_at",
+                    models.DateTimeField(
+                        auto_now_add=True, verbose_name="Date de création"
+                    ),
+                ),
+                (
+                    "updated_at",
+                    models.DateTimeField(
+                        auto_now=True, verbose_name="Date de mise à jour"
+                    ),
+                ),
+                (
+                    "author",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                        verbose_name="Auteur",
+                    ),
+                ),
             ],
         ),
         migrations.AddField(
-            model_name='issue',
-            name='project',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='issues', to='softdesksupport.project', verbose_name='Projet'),
+            model_name="issue",
+            name="project",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="issues",
+                to="softdesksupport.project",
+                verbose_name="Projet",
+            ),
         ),
         migrations.CreateModel(
-            name='ProjectContributor',
+            name="ProjectContributor",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('contribution', models.CharField(max_length=255, verbose_name='Contribution')),
-                ('contributor', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL, verbose_name='Utilisateur')),
-                ('project', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='softdesksupport.project', verbose_name='Projet')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "contribution",
+                    models.CharField(max_length=255, verbose_name="Contribution"),
+                ),
+                (
+                    "contributor",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to=settings.AUTH_USER_MODEL,
+                        verbose_name="Utilisateur",
+                    ),
+                ),
+                (
+                    "project",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="softdesksupport.project",
+                        verbose_name="Projet",
+                    ),
+                ),
             ],
             options={
-                'unique_together': {('project', 'contributor')},
+                "unique_together": {("project", "contributor")},
             },
         ),
         migrations.AddField(
-            model_name='project',
-            name='contributors',
-            field=models.ManyToManyField(blank=True, related_name='contributed_projects', through='softdesksupport.ProjectContributor', to=settings.AUTH_USER_MODEL, verbose_name='Contributeurs'),
+            model_name="project",
+            name="contributors",
+            field=models.ManyToManyField(
+                blank=True,
+                related_name="contributed_projects",
+                through="softdesksupport.ProjectContributor",
+                to=settings.AUTH_USER_MODEL,
+                verbose_name="Contributeurs",
+            ),
         ),
     ]

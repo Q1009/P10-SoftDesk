@@ -27,9 +27,11 @@ class IsContributor(BasePermission):
         """
         if not (request.user and request.user.is_authenticated):
             return False
-        project_pk = view.kwargs.get('project_pk')
+        project_pk = view.kwargs.get("project_pk")
         if project_pk:
-            return Project.objects.filter(pk=project_pk, contributors=request.user).exists()
+            return Project.objects.filter(
+                pk=project_pk, contributors=request.user
+            ).exists()
         return True
 
     def has_object_permission(self, request, view, obj):
@@ -39,7 +41,13 @@ class IsContributor(BasePermission):
         - For read actions: checks that the user is a contributor of the project.
         - For write actions (update, destroy): checks that the user is the author.
         """
-        WRITE_ACTIONS = ('update', 'partial_update', 'destroy', 'add_contributor', 'remove_contributor')
+        WRITE_ACTIONS = (
+            "update",
+            "partial_update",
+            "destroy",
+            "add_contributor",
+            "remove_contributor",
+        )
 
         if isinstance(obj, Project):
             if view.action in WRITE_ACTIONS:

@@ -9,6 +9,7 @@ User = get_user_model()
 
 class RegisterView(generics.CreateAPIView):
     """Inscription : vérifie l'âge (>= 15 ans) et recueille les consentements RGPD."""
+
     queryset = User.objects.all()
     serializer_class = RegisterSerializer
     permission_classes = [AllowAny]
@@ -16,6 +17,7 @@ class RegisterView(generics.CreateAPIView):
 
 class UserProfileView(generics.RetrieveUpdateDestroyAPIView):
     """Accès, rectification et suppression (droit à l'oubli) du profil utilisateur."""
+
     serializer_class = UserProfileSerializer
     permission_classes = [IsAuthenticated]
 
@@ -26,6 +28,6 @@ class UserProfileView(generics.RetrieveUpdateDestroyAPIView):
         user = self.get_object()
         user.delete()
         return Response(
-            {'detail': 'Votre compte et toutes vos données ont été supprimés.'},
+            {"detail": "Votre compte et toutes vos données ont été supprimés."},
             status=status.HTTP_204_NO_CONTENT,
         )

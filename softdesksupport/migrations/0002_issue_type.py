@@ -6,13 +6,22 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('softdesksupport', '0001_initial'),
+        ("softdesksupport", "0001_initial"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='issue',
-            name='type',
-            field=models.CharField(choices=[('BUG', 'Bug'), ('FEATURE', 'Fonctionnalité'), ('TASK', 'Tâche')], default='TASK', max_length=10, verbose_name="Type de l'issue"),
+            model_name="issue",
+            name="type",
+            field=models.CharField(
+                choices=[
+                    ("BUG", "Bug"),
+                    ("FEATURE", "Fonctionnalité"),
+                    ("TASK", "Tâche"),
+                ],
+                default="TASK",
+                max_length=10,
+                verbose_name="Type de l'issue",
+            ),
         ),
     ]
