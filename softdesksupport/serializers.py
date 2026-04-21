@@ -5,7 +5,17 @@ from rest_framework.reverse import reverse
 from .models import Project, Issue, Comment
 
 
-class ProjectListSerializer(serializers.ModelSerializer):
+class ProjectNameValidationMixin:
+    def validate_name(self, value):
+        qs = Project.objects.filter(name=value)
+        if self.instance:
+            qs = qs.exclude(pk=self.instance.pk)
+        if qs.exists():
+            raise serializers.ValidationError("Ce projet existe déjà.")
+        return value
+
+
+class ProjectListSerializer(ProjectNameValidationMixin, serializers.ModelSerializer):
     class Meta:
         model = Project
         fields = [
@@ -20,13 +30,8 @@ class ProjectListSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["author", "contributors"]
 
-    def validate_name(self, value):
-        if Project.objects.filter(name=value).exists():
-            raise serializers.ValidationError("Ce projet existe déjà.")
-        return value
 
-
-class ProjectDetailSerializer(serializers.ModelSerializer):
+class ProjectDetailSerializer(ProjectNameValidationMixin, serializers.ModelSerializer):
     issues = serializers.SerializerMethodField()
     contributors = serializers.SerializerMethodField()
 
@@ -172,7 +177,7 @@ class CommentSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
-        read_only_fields = ["issue", "issue_url", "author"]
+        read_only_fields = ["issue", "author"]
 
     def get_issue_url(self, instance):
         project_id = self.context.get("project_id")
