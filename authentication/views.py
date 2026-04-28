@@ -28,6 +28,6 @@ class UserProfileView(generics.RetrieveUpdateDestroyAPIView):
         user = self.get_object()
         user.delete()
         return Response(
-            {"detail": "Votre compte et toutes vos données ont été supprimés."},
+            #{"detail": "Votre compte et toutes vos données ont été supprimés."},
             status=status.HTTP_204_NO_CONTENT,
         )
