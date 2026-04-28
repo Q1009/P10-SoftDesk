@@ -37,7 +37,6 @@ class ProjectViewset(MultipleSerializerMixin, ModelViewSet):
     permission_classes = [IsAuthenticated, IsContributor]
 
     def get_queryset(self):
-        # L'action retrieve est protégée par IsContributor, donc on peut retourner tous les projets ici
         return Project.objects.select_related("author").prefetch_related(
             "contributors", "issues"
         )

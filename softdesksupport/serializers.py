@@ -79,7 +79,7 @@ class AssigneeFromProjectMixin:
                 try:
                     project = Project.objects.prefetch_related("contributors").get(
                         pk=project_id
-                    )  # difference entre prefetch_related et select_related ? --- IGNORE ---
+                    )
                 except Project.DoesNotExist:
                     project = None
         if project:
